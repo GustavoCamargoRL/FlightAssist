@@ -2,6 +2,7 @@ from __future__ import print_function
 import cv2 as cv
 import argparse
 import numpy as np
+import math
 from tkinter import *
 
 
@@ -184,6 +185,19 @@ def get_glide_radius(z_coord):
     radius = int((z_coord/1000)*glide_ratio*c_aprox)
     return radius
 
+#update distance from airplane to airport in the airport matrix
+def update_pos(x_coord,y_coord):
+    iterator = 0
+    for a in airport_coord:
+        pixel_dist = pow(a[0]-x_coord,2)+pow(a[1]-y_coord,2)
+        pixel_dist = math.sqrt(pixel_dist)
+        airport_matrix[iterator][0] = pixel_dist/10.25
+        print(iterator,airport_matrix[iterator])
+        iterator = iterator+1
+def normalize_matrix():
+    max_a = max(airport_matrix[0])
+    max_b = min(airport_matrix[0])
+    
 planesize = np.float32([[0,0],[srcPlane.shape[0],0],[0,srcPlane.shape[1]],[srcPlane.shape[0],srcPlane.shape[1]]])
 #srcPlane[np.where((srcPlane == [0,0,0]).all(axis=2))] = [1,1,1]
 
@@ -199,6 +213,7 @@ while True:
             map = cv.circle(map, (a[0],a[1]), radius=1, color=(0, 255, 255), thickness=10)
    
     planecoord = np.float32([[high_X-20,high_Y-20],[high_X+20,high_Y-20],[high_X-20,high_Y+20],[high_X+20,high_Y+20]])
+    update_pos(high_X,high_Y)
     homography1, status1 = cv.findHomography(planesize,planecoord)
     warpBoard1 = cv.warpPerspective(srcPlane_R, homography1, (srcMap.shape[1], srcMap.shape[0]), borderMode=cv.BORDER_CONSTANT, borderValue=(0,0,0))
     merged_image = np.where(warpBoard1==0, map, warpBoard1)
