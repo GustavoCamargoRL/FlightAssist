@@ -1,9 +1,11 @@
 from __future__ import print_function
 import cv2 as cv
-import argparse
 import numpy as np
 import math
-from tkinter import *
+#from tkinter import *
+import menu_method
+from test import objectives
+
 
 
 
@@ -84,6 +86,9 @@ xpos_name = "x coord"
 ypos_name = "y coord"
 rotation_name = "rotation"
 
+select = objectives()
+print(select)
+
 
 def on_low_H_thresh_trackbar(val):
     global low_H
@@ -129,7 +134,7 @@ cv.createTrackbar(altitude_name, window_detection_name , high_A, max_value_A, on
 cv.createTrackbar(xpos_name, window_detection_name , high_X, max_value_X, on_Xpos_trackbar)
 cv.createTrackbar(ypos_name, window_detection_name , high_Y, max_value_Y, on_Ypos_trackbar)
 cv.createTrackbar(rotation_name, window_detection_name , high_R, max_value_R, on_rotation_trackbar)
-
+cv.resizeWindow(window_detection_name,width=400,height=2)
 srcPlane = cv.resize(srcPlane,(int(srcPlane.shape[1]), int(srcPlane.shape[1])), interpolation=cv.INTER_AREA)
 
 
@@ -192,14 +197,15 @@ def update_pos(x_coord,y_coord):
         pixel_dist = pow(a[0]-x_coord,2)+pow(a[1]-y_coord,2)
         pixel_dist = math.sqrt(pixel_dist)
         airport_matrix[iterator][0] = pixel_dist/10.25
-        print(iterator,airport_matrix[iterator])
         iterator = iterator+1
+
 def normalize_matrix():
     max_a = max(airport_matrix[0])
     max_b = min(airport_matrix[0])
-    
+
 planesize = np.float32([[0,0],[srcPlane.shape[0],0],[0,srcPlane.shape[1]],[srcPlane.shape[0],srcPlane.shape[1]]])
 #srcPlane[np.where((srcPlane == [0,0,0]).all(axis=2))] = [1,1,1]
+
 
 while True:
     
@@ -219,7 +225,6 @@ while True:
     merged_image = np.where(warpBoard1==0, map, warpBoard1)
     #cv.imshow(window_capture_name, combine_img(srcPlane_R,map,high_Y,high_X))
     cv.imshow(window_capture_name, merged_image)
-    
     key = cv.waitKey(30)
     if key == ord('q') or key == 27:
         break
