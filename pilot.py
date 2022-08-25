@@ -5,9 +5,10 @@ import math
 #from tkinter import *
 import menu_method
 from test import objectives
+from smarts import smarts
 
 
-
+k_smarts = [100,90,50,20,60]
 
 srcMap = cv.imread("map.png")
 srcPlane = cv.imread("airplane3.png")
@@ -18,35 +19,51 @@ airports_name = ["LaGuardia Airport","Teterboro Airport","JFK Airport","Republic
 
 # index(Distancia,Comprimento de pista,Altitude, Direção do vento, Nível de construções ao redor)
 airport_matrix = [
-    [12.41, 2134, 20, 1,0],
-    [15.42,1833,8.4,0,2],
-    [31.27,3048,17.4,0,1],
-    [40.22,2083,82,1,2],
-    [65.72,2135,99,1,2],
-    [29.44,1996,439,0,1],
-    [48.17,655,921,0,0],
-    [38.55,3932,1219,0,1],
-    [33.89,1387,172,1,1],
-    [45.58,1828,187,0,1],
-    [39.10,1260,23,0,2],
-    [28.71,3048,17.4,0,1],
-    [69.27,1070,86,0,1]
+    [12.41, 2134, 20, 2,1,0],
+    [15.42,1833,8.4,1,3,1],
+    [31.27,3048,17.4,1,2,2],
+    [40.22,2083,82,2,3,3],
+    [65.72,2135,99,2,3,4],
+    [29.44,1996,439,1,2,5],
+    [48.17,655,921,1,1,6],
+    [38.55,3932,1219,1,2,7],
+    [33.89,1387,172,2,2,8],
+    [45.58,1828,187,1,2,9],
+    [39.10,1260,23,1,3,10],
+    [28.71,3048,17.4,1,2,11],
+    [69.27,1070,86,1,2,12]
+]
+
+airport_matrix_ori = [
+    [12.41, 2134, 20, 2,1,0],
+    [15.42,1833,8.4,1,3,1],
+    [31.27,3048,17.4,1,2,2],
+    [40.22,2083,82,2,3,3],
+    [65.72,2135,99,2,3,4],
+    [29.44,1996,439,1,2,5],
+    [48.17,655,921,1,1,6],
+    [38.55,3932,1219,1,2,7],
+    [33.89,1387,172,2,2,8],
+    [45.58,1828,187,1,2,9],
+    [39.10,1260,23,1,3,10],
+    [28.71,3048,17.4,1,2,11],
+    [69.27,1070,86,1,2,12]
 ]
 #coordenadas de imagem do aeroporto
 airport_coord = [
-    [638,392],
-    [472,296],
-    [710,539],
-    [1031,447],
-    [1304,364],
-    [779,54],
-    [234,39],
-    [253,189],
-    [292,277],
-    [166,364],
-    [318,573],
-    [370,490],
-    [15,674]
+    [638,392,0],
+    [472,296,1],
+    [710,539,2],
+    [1031,447,3],
+    [1304,364,4],
+    [779,54,5],
+    [234,39,6],
+    [253,189,7],
+    [292,277,8],
+    [166,364,9],
+    [318,573,10],
+    [370,490,11],
+    [15,674,12]
 ]
 #Constante de aproximacao pixels - KM
 c_aprox = 10.26 # valor obtido pela média das taxas de distancia pixel/km das 3 coordenadas abaixo
@@ -193,37 +210,78 @@ def get_glide_radius(z_coord):
 #update distance from airplane to airport in the airport matrix
 def update_pos(x_coord,y_coord):
     iterator = 0
+    #print(airport_matrix[0])
     for a in airport_coord:
         pixel_dist = pow(a[0]-x_coord,2)+pow(a[1]-y_coord,2)
         pixel_dist = math.sqrt(pixel_dist)
         airport_matrix[iterator][0] = pixel_dist/10.25
+        airport_matrix[iterator][1] = airport_matrix_ori[iterator][1]
+        airport_matrix[iterator][2] =  airport_matrix_ori[iterator][2]
+        airport_matrix[iterator][3] = airport_matrix_ori[iterator][3]
+        airport_matrix[iterator][4] = airport_matrix_ori[iterator][4]
         iterator = iterator+1
 
-def normalize_matrix():
-    max_a = max(airport_matrix[0])
-    max_b = min(airport_matrix[0])
+    #print(airport_matrix[0])
+
 
 planesize = np.float32([[0,0],[srcPlane.shape[0],0],[0,srcPlane.shape[1]],[srcPlane.shape[0],srcPlane.shape[1]]])
 #srcPlane[np.where((srcPlane == [0,0,0]).all(axis=2))] = [1,1,1]
 
+def matrix_smarts(matrix_con):
+    if matrix_con is None:
+        return 0
+    else:
+        max_vc = []
+        min_vc = []
+        #print(matrix_con)
+        for alt in range(len(matrix_con)):
+            #print(matrix_con[alt][1])
+            for cri in range(len(matrix_con[0])-1):
+                if(alt == 0):
+                    max_vc.append(matrix_con[alt][cri])
+                    min_vc.append(matrix_con[alt][cri])
+                else:
+                    if matrix_con[alt][cri] > max_vc[cri]:
+                        max_vc[cri] = matrix_con[alt][cri]
+                    if matrix_con[alt][cri] < min_vc[cri]:
+                        min_vc[cri] = matrix_con[alt][cri]
+        for alt in range(len(matrix_con)):
+            for cri in range(len(matrix_con[0])-1):
+                if(max_vc[cri]-min_vc[cri] != 0):
+                    if(cri == 1):
+                        matrix_con[alt][cri] = (matrix_con[alt][cri] - min_vc[cri])/(max_vc[cri]-min_vc[cri])
+                    else: 
+                        matrix_con[alt][cri] = (matrix_con[alt][cri] - max_vc[cri])/(min_vc[cri]-max_vc[cri])
+        return matrix_con
+
 
 while True:
     
+    matrix_selected = []
     map = srcMap.copy()
     srcPlane_R = rotate_image(srcPlane,high_R)
     cv.circle(map, (high_X,high_Y), get_glide_radius(high_A), (0,0,255), thickness=5)
+    update_pos(high_X,high_Y)
     for a in airport_coord:
         if(pow(high_X-a[0],2)+pow(high_Y-a[1],2) <= pow(get_glide_radius(high_A),2)):
             map = cv.circle(map, (a[0],a[1]), radius=1, color=(0, 255, 0), thickness=10)
+            #print(airport_matrix[a[2]])
+            matrix_selected.append(airport_matrix[a[2]])
         else:        
             map = cv.circle(map, (a[0],a[1]), radius=1, color=(0, 255, 255), thickness=10)
-   
+    
     planecoord = np.float32([[high_X-20,high_Y-20],[high_X+20,high_Y-20],[high_X-20,high_Y+20],[high_X+20,high_Y+20]])
-    update_pos(high_X,high_Y)
     homography1, status1 = cv.findHomography(planesize,planecoord)
     warpBoard1 = cv.warpPerspective(srcPlane_R, homography1, (srcMap.shape[1], srcMap.shape[0]), borderMode=cv.BORDER_CONSTANT, borderValue=(0,0,0))
     merged_image = np.where(warpBoard1==0, map, warpBoard1)
-    #cv.imshow(window_capture_name, combine_img(srcPlane_R,map,high_Y,high_X))
+    normalized_matrix = matrix_smarts(matrix_selected)
+    get_order = smarts(normalized_matrix,k_smarts)
+    if not get_order:
+        print("no choice")
+    else:
+        best_coord = (airport_coord[get_order[0][0]][0],airport_coord[get_order[0][0]][1])
+        cv.line(merged_image, (high_X,high_Y), best_coord, color=(255, 255, 0), thickness=10) 
+    cv.imshow(window_capture_name, combine_img(srcPlane_R,map,high_Y,high_X))
     cv.imshow(window_capture_name, merged_image)
     key = cv.waitKey(30)
     if key == ord('q') or key == 27:
