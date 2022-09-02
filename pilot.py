@@ -6,9 +6,11 @@ import math
 import menu_method
 from test import objectives
 from smarts import smarts
+from smarter import smarter
 
 
 k_smarts = [100,90,50,20,60]
+order_smarter = [0,1,4,2,3]
 
 srcMap = cv.imread("map.png")
 srcPlane = cv.imread("airplane3.png")
@@ -276,11 +278,17 @@ while True:
     merged_image = np.where(warpBoard1==0, map, warpBoard1)
     normalized_matrix = matrix_smarts(matrix_selected)
     get_order = smarts(normalized_matrix,k_smarts)
+    get_smarter = smarter(normalized_matrix,order_smarter)
     if not get_order:
-        print("no choice")
+        print("no choice SMARTS")
     else:
         best_coord = (airport_coord[get_order[0][0]][0],airport_coord[get_order[0][0]][1])
         cv.line(merged_image, (high_X,high_Y), best_coord, color=(255, 255, 0), thickness=10) 
+    if not get_smarter:
+        print("no choice SMARTER")
+    else:
+        best_coord = (airport_coord[get_smarter[0][0]][0],airport_coord[get_smarter[0][0]][1])
+        cv.line(merged_image, (high_X,high_Y), best_coord, color=(100, 0, 100), thickness=5) 
     cv.imshow(window_capture_name, combine_img(srcPlane_R,map,high_Y,high_X))
     cv.imshow(window_capture_name, merged_image)
     key = cv.waitKey(30)
