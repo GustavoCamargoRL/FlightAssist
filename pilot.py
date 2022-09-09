@@ -7,10 +7,13 @@ import menu_method
 from test import objectives
 from smarts import smarts
 from smarter import smarter
+from gsmarts import *
 
 
 k_smarts = [100,90,50,20,60]
 order_smarter = [0,1,4,2,3]
+s = [4,200,5,0,1]
+c_type = [0,0,0,2,1]
 
 srcMap = cv.imread("map.png")
 srcPlane = cv.imread("airplane3.png")
@@ -106,7 +109,7 @@ ypos_name = "y coord"
 rotation_name = "rotation"
 
 select = objectives()
-print(select)
+#print(select)
 
 
 def on_low_H_thresh_trackbar(val):
@@ -254,6 +257,8 @@ def matrix_smarts(matrix_con):
                         matrix_con[alt][cri] = (matrix_con[alt][cri] - min_vc[cri])/(max_vc[cri]-min_vc[cri])
                     else: 
                         matrix_con[alt][cri] = (matrix_con[alt][cri] - max_vc[cri])/(min_vc[cri]-max_vc[cri])
+                else:
+                    matrix_con[alt][cri] = 0
         return matrix_con
 
 
@@ -276,14 +281,22 @@ while True:
     homography1, status1 = cv.findHomography(planesize,planecoord)
     warpBoard1 = cv.warpPerspective(srcPlane_R, homography1, (srcMap.shape[1], srcMap.shape[0]), borderMode=cv.BORDER_CONSTANT, borderValue=(0,0,0))
     merged_image = np.where(warpBoard1==0, map, warpBoard1)
+    correct_k = intra_analysis(matrix_selected,k_smarts,s,c_type)
     normalized_matrix = matrix_smarts(matrix_selected)
+    print("normalized:" ,normalized_matrix)
     get_order = smarts(normalized_matrix,k_smarts)
     get_smarter = smarter(normalized_matrix,order_smarter)
+    get_smartest = gsmarts(normalized_matrix,k_smarts,correct_k)
+    if not get_smartest:
+        print("no choice SMARTEST")
+    else:
+        best_coord = (airport_coord[get_smartest[0][0]][0],airport_coord[get_smartest[0][0]][1])
+        cv.line(merged_image, (high_X,high_Y), best_coord, color=(0, 255, 0), thickness=10)
     if not get_order:
         print("no choice SMARTS")
     else:
         best_coord = (airport_coord[get_order[0][0]][0],airport_coord[get_order[0][0]][1])
-        cv.line(merged_image, (high_X,high_Y), best_coord, color=(255, 255, 0), thickness=10) 
+        cv.line(merged_image, (high_X,high_Y), best_coord, color=(255, 255, 0), thickness=7) 
     if not get_smarter:
         print("no choice SMARTER")
     else:
