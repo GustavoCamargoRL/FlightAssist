@@ -116,10 +116,10 @@ def gsmarts(matriz_cons,k,k_correction):
         for alt in range(len(matriz_cons)):
             for criteria in range(len(matriz_cons[alt])-1):
                 if(criteria == 0):
-                    score_alt[alt][0] = matriz_cons[alt][5]
+                    score_alt[alt][0] = matriz_cons[alt][6]
                 score_alt[alt][1] = score_alt[alt][1] + matriz_cons[alt][criteria]*k_norm_smartes[criteria]
                 
         score_alt.sort(key=lambda row: (row[1]), reverse = True)
-        print("gsmats",k_norm_smartes, score_alt)
+        print("gsmarts",k_norm_smartes, score_alt)
             
         return score_alt

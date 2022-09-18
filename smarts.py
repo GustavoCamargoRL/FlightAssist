@@ -1,6 +1,5 @@
 # implementacao do metodo smarts para MAD
 
-from asyncio.windows_events import NULL
 
 
 def smarts(matriz_cons,k):
@@ -8,6 +7,7 @@ def smarts(matriz_cons,k):
         return 0
     else:
         total_k = 0
+        #print("smarts",k)
         k_norm = []
         score_alt = [[0 for x in range(2)] for y in range(len(matriz_cons))]
         for i in k:
@@ -17,11 +17,11 @@ def smarts(matriz_cons,k):
         for alt in range(len(matriz_cons)):
             for criteria in range(len(matriz_cons[alt])-1):
                 if(criteria == 0):
-                    score_alt[alt][0] = matriz_cons[alt][5]
-                score_alt[alt][1] = score_alt[alt][1] + matriz_cons[alt][criteria]*k_norm[criteria-1]
+                    score_alt[alt][0] = matriz_cons[alt][6]
+                score_alt[alt][1] = score_alt[alt][1] + matriz_cons[alt][criteria]*k_norm[criteria]
                 
         score_alt.sort(key=lambda row: (row[1]), reverse = True)
-        print(score_alt)
+        #print("smarts",k_norm, score_alt)
             
         return score_alt
 

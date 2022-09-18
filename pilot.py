@@ -10,10 +10,10 @@ from smarter import smarter
 from gsmarts import *
 
 
-k_smarts = [100,90,50,20,60]
-order_smarter = [0,1,4,2,3]
-s = [4,200,5,0,1]
-c_type = [0,0,0,2,1]
+k_smarts = [100,90,40,20,30,60]
+order_smarter = [0,1,3,5,4,2]
+s = [4,200,5,0,1,2]
+c_type = [0,0,0,2,1,1]
 
 srcMap = cv.imread("map.png")
 srcPlane = cv.imread("airplane3.png")
@@ -24,35 +24,35 @@ airports_name = ["LaGuardia Airport","Teterboro Airport","JFK Airport","Republic
 
 # index(Distancia,Comprimento de pista,Altitude, Direção do vento, Nível de construções ao redor)
 airport_matrix = [
-    [12.41, 2134, 20, 2,1,0],
-    [15.42,1833,8.4,1,3,1],
-    [31.27,3048,17.4,1,2,2],
-    [40.22,2083,82,2,3,3],
-    [65.72,2135,99,2,3,4],
-    [29.44,1996,439,1,2,5],
-    [48.17,655,921,1,1,6],
-    [38.55,3932,1219,1,2,7],
-    [33.89,1387,172,2,2,8],
-    [45.58,1828,187,1,2,9],
-    [39.10,1260,23,1,3,10],
-    [28.71,3048,17.4,1,2,11],
-    [69.27,1070,86,1,2,12]
+    [12.41, 2134, 20, 2,1,2,0],
+    [15.42,1833,8.4,1,3,5,1],
+    [31.27,3048,17.4,1,2,3,2],
+    [40.22,2083,82,2,3,4,3],
+    [65.72,2135,99,2,3,7,4],
+    [29.44,1996,439,1,2,7,5],
+    [48.17,655,921,1,1,7,6],
+    [38.55,3932,1219,1,2,5,7],
+    [33.89,1387,172,2,2,4,8],
+    [45.58,1828,187,1,2,5,9],
+    [39.10,1260,23,1,3,3,10],
+    [28.71,3048,17.4,1,2,1,11],
+    [69.27,1070,86,1,2,4,12]
 ]
 
 airport_matrix_ori = [
-    [12.41, 2134, 20, 2,1,0],
-    [15.42,1833,8.4,1,3,1],
-    [31.27,3048,17.4,1,2,2],
-    [40.22,2083,82,2,3,3],
-    [65.72,2135,99,2,3,4],
-    [29.44,1996,439,1,2,5],
-    [48.17,655,921,1,1,6],
-    [38.55,3932,1219,1,2,7],
-    [33.89,1387,172,2,2,8],
-    [45.58,1828,187,1,2,9],
-    [39.10,1260,23,1,3,10],
-    [28.71,3048,17.4,1,2,11],
-    [69.27,1070,86,1,2,12]
+    [12.41, 2134, 20, 2,1,2,0],
+    [15.42,1833,8.4,1,3,5,1],
+    [31.27,3048,17.4,1,2,3,2],
+    [40.22,2083,82,2,3,4,3],
+    [65.72,2135,99,2,3,7,4],
+    [29.44,1996,439,1,2,7,5],
+    [48.17,655,921,1,1,7,6],
+    [38.55,3932,1219,1,2,5,7],
+    [33.89,1387,172,2,2,4,8],
+    [45.58,1828,187,1,2,5,9],
+    [39.10,1260,23,1,3,3,10],
+    [28.71,3048,17.4,1,2,1,11],
+    [69.27,1070,86,1,2,4,12]
 ]
 #coordenadas de imagem do aeroporto
 airport_coord = [
@@ -224,6 +224,7 @@ def update_pos(x_coord,y_coord):
         airport_matrix[iterator][2] =  airport_matrix_ori[iterator][2]
         airport_matrix[iterator][3] = airport_matrix_ori[iterator][3]
         airport_matrix[iterator][4] = airport_matrix_ori[iterator][4]
+        airport_matrix[iterator][5] = airport_matrix_ori[iterator][5]
         iterator = iterator+1
 
     #print(airport_matrix[0])
@@ -283,7 +284,7 @@ while True:
     merged_image = np.where(warpBoard1==0, map, warpBoard1)
     correct_k = intra_analysis(matrix_selected,k_smarts,s,c_type)
     normalized_matrix = matrix_smarts(matrix_selected)
-    print("normalized:" ,normalized_matrix)
+    #print("normalized:" ,normalized_matrix)
     get_order = smarts(normalized_matrix,k_smarts)
     get_smarter = smarter(normalized_matrix,order_smarter)
     get_smartest = gsmarts(normalized_matrix,k_smarts,correct_k)
@@ -296,7 +297,7 @@ while True:
         print("no choice SMARTS")
     else:
         best_coord = (airport_coord[get_order[0][0]][0],airport_coord[get_order[0][0]][1])
-        cv.line(merged_image, (high_X,high_Y), best_coord, color=(255, 255, 0), thickness=7) 
+        cv.line(merged_image, (high_X,high_Y), best_coord, color=(255, 0, 0), thickness=7) 
     if not get_smarter:
         print("no choice SMARTER")
     else:
