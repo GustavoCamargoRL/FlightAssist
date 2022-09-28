@@ -4,14 +4,14 @@ import numpy as np
 import math
 #from tkinter import *
 import menu_method
-from test import objectives
+#from test import objectives
 from smarts import smarts
 from smarter import smarter
 from gsmarts import *
 
 
 k_smarts = [100,90,40,20,30,60]
-order_smarter = [0,1,3,5,4,2]
+order_smarter = [0,1,5,2,4,3]
 s = [4,200,5,0,1,2]
 c_type = [0,0,0,2,1,1]
 
@@ -22,7 +22,7 @@ airports_name = ["LaGuardia Airport","Teterboro Airport","JFK Airport","Republic
 "Westchester Country Airport","Hill Top Airport","Lincoln Park Airport","Essex Country Airport","Morristown Airport",
 "Linden Airoprt","Newark Airport","Central Jersey Airport"]
 
-# index(Distancia,Comprimento de pista,Altitude, Direção do vento, Nível de construções ao redor)
+# index(Distancia,Comprimento de pista,Altitude, Direção do vento, Nível de construções ao redor, Nível de suporte)
 airport_matrix = [
     [12.41, 2134, 20, 2,1,2,0],
     [15.42,1833,8.4,1,3,5,1],
@@ -108,7 +108,7 @@ xpos_name = "x coord"
 ypos_name = "y coord"
 rotation_name = "rotation"
 
-select = objectives()
+#select = objectives()
 #print(select)
 
 
@@ -277,12 +277,14 @@ while True:
             matrix_selected.append(airport_matrix[a[2]])
         else:        
             map = cv.circle(map, (a[0],a[1]), radius=1, color=(0, 255, 255), thickness=10)
-    
+    print("matrix: ",matrix_selected)
     planecoord = np.float32([[high_X-20,high_Y-20],[high_X+20,high_Y-20],[high_X-20,high_Y+20],[high_X+20,high_Y+20]])
     homography1, status1 = cv.findHomography(planesize,planecoord)
     warpBoard1 = cv.warpPerspective(srcPlane_R, homography1, (srcMap.shape[1], srcMap.shape[0]), borderMode=cv.BORDER_CONSTANT, borderValue=(0,0,0))
     merged_image = np.where(warpBoard1==0, map, warpBoard1)
-    correct_k = intra_analysis(matrix_selected,k_smarts,s,c_type)
+    if(len(matrix_selected)>1):
+        correct_k = intra_analysis(matrix_selected,k_smarts,s,c_type)
+    #print("support: ", correct_k[5])
     normalized_matrix = matrix_smarts(matrix_selected)
     #print("normalized:" ,normalized_matrix)
     get_order = smarts(normalized_matrix,k_smarts)

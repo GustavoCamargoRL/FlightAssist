@@ -21,7 +21,7 @@ def intra_analysis(matriz_cons,k,s,c_type):
                         if(alt != n_alt+alt):
                             distance_vector.append(abs(matriz_cons[alt][i]-matriz_cons[n_alt+alt][i])) #sum of all distances
                 d_total = sum(distance_vector)
-                d_mean = d_total/len(matriz_cons)  #mean of distances
+                d_mean = d_total/len(distance_vector)  #mean of distances
                 if(s[i] > d_mean):
                     ck = d_mean/s[i]             # correction factor for K
                 else:
@@ -32,8 +32,39 @@ def intra_analysis(matriz_cons,k,s,c_type):
                     if(abs(matriz_cons[0][i] - matriz_cons[1][i]) == 0):
                         ck_vector.append(0)
                 elif(len(matriz_cons) == 3): # only 3 alternatives available
-                    if(abs(matriz_cons[0][i] - matriz_cons[1][i]) <= 1 and abs(matriz_cons[0][i] - matriz_cons[2][i]) <= 1 and abs(matriz_cons[1][i] - matriz_cons[2][i]) <= 1):
-                        ck_vector.append(0.5)
+                    values_c = []
+                    minimum = 0
+                    Q1 = 0
+                    Q2 = 0
+                    Q3 = 0
+                    maximum = 0
+                    for a in range(len(matriz_cons)):
+                        values_c.append(matriz_cons[a][i])
+                    values_c.sort()
+                    minimum = min(values_c)
+                    maximum = max(values_c)
+                    Q2 = values_c[1]
+                    Q1 = (minimum + Q2)/2
+                    Q3 = (maximum + Q2)/2
+                    #if(abs(matriz_cons[0][i] - matriz_cons[1][i]) <= 1 and abs(matriz_cons[0][i] - matriz_cons[2][i]) <= 1 and abs(matriz_cons[1][i] - matriz_cons[2][i]) <= 1):
+                    #    ck_vector.append(0.5)
+                    boxplot = [minimum,Q1,Q2,Q3,maximum]
+                    #print(boxplot)
+
+                    distance_vector = []
+                    for alt in range(len(boxplot)):   # alternatives exploration
+                        for n_alt in range(len(boxplot)-alt):   # pair-pair comparison  
+                            if(alt != n_alt+alt):
+                                distance_vector.append(abs(boxplot[alt]-boxplot[n_alt+alt])) #sum of all distances
+                    d_total = sum(distance_vector)
+                    #if(i == 5):
+                    #    print(d_total,len(distance_vector))
+                    d_mean = d_total/len(distance_vector)  #mean of distances
+                    if(s[i] > d_mean):
+                        ck = d_mean/s[i]             # correction factor for K
+                    else:
+                        ck = 1
+                    ck_vector.append(ck)
                 elif(len(matriz_cons) > 3):                       # 4 or more alternatives available, boxplot analysis
                     values_c = []
                     minimum = 0
@@ -69,7 +100,7 @@ def intra_analysis(matriz_cons,k,s,c_type):
                             if(alt != n_alt+alt):
                                 distance_vector.append(abs(boxplot[alt]-boxplot[n_alt+alt])) #sum of all distances
                     d_total = sum(distance_vector)
-                    d_mean = d_total/len(boxplot)  #mean of distances
+                    d_mean = d_total/len(distance_vector)  #mean of distances
                     if(s[i] > d_mean):
                         ck = d_mean/s[i]             # correction factor for K
                     else:
