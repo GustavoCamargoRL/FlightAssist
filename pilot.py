@@ -3,27 +3,69 @@ import cv2 as cv
 import numpy as np
 import math
 #from tkinter import *
-import menu_method
+import start_menu
 import threading
-from test import *
+from menu import *
 from smarts import smarts
 from smarter import smarter
 from gsmarts import *
 import variables
+import matplotlib.pyplot as plt
+import time
+from matplotlib.animation import FuncAnimation
+from feedback import report
 
 
 variables.init()
 
-def thread_function():
+def thread_elicit():
+    variables.elicitation_done = elicitation()
+
+def thread_method():
     chooseMethod()
 
+def thread_feedback():
+    report()
+
 k_smarts = [100,90,40,20,30,60]
-order_smarter = [0,1,5,2,4,3]
 s = [4,200,5,0,1,2]
+
+
 c_type = [0,0,0,2,1,1]
 
-Thr = threading.Thread(target=thread_function)
+Telicit = threading.Thread(target=thread_elicit)
+Telicit.start()
+
+while(variables.elicitation_done == False):
+    Criteria = ['Distance','Length','Altitude','Wind','Urban density', 'Support']
+    
+
+    def animate(i):
+
+        plt.cla()
+
+        plt.bar(Criteria, variables.elicit)
+        plt.title('Choose the criterion that you want to maximize in order of preference:')
+        plt.xlabel('Criterion')
+        plt.ylabel('Score')
+        plt.tight_layout()
+
+
+    ani = FuncAnimation(plt.gcf(), animate, interval=200)
+
+    plt.tight_layout()
+    plt.show()
+
+
+
+
+Thr = threading.Thread(target=thread_method)
 Thr.start()
+
+fb = threading.Thread(target=thread_feedback)
+fb.start()
+
+
 srcMap = cv.imread("map.png")
 srcPlane = cv.imread("airplane3.png")
 
@@ -299,22 +341,34 @@ while True:
         get_smartest = gsmarts(normalized_matrix,k_smarts,correct_k)
         if not get_smartest:
             print("no choice SMARTEST")
+            variables.found_smartest = False
         else:
+            variables.found_smartest = True
             best_coord = (airport_coord[get_smartest[0][0]][0],airport_coord[get_smartest[0][0]][1])
+            variables.best_smartest = airports_name[get_smartest[0][0]]
+            variables.score_smartest = get_smartest[0][1]
             cv.line(merged_image, (high_X,high_Y), best_coord, color=(0, 255, 0), thickness=10)
     if(variables.activate[0]==1):
         get_order = smarts(normalized_matrix,k_smarts)
         if not get_order:
             print("no choice SMARTS")
+            variables.found_smarts = False
         else:
+            variables.found_smarts = True
             best_coord = (airport_coord[get_order[0][0]][0],airport_coord[get_order[0][0]][1])
+            variables.best_smarts = airports_name[get_order[0][0]]
+            variables.score_smarts = get_order[0][1]
             cv.line(merged_image, (high_X,high_Y), best_coord, color=(255, 0, 0), thickness=7) 
     if(variables.activate[1]==1):
-        get_smarter = smarter(normalized_matrix,order_smarter)
+        get_smarter = smarter(normalized_matrix,variables.rank)
         if not get_smarter:
             print("no choice SMARTER")
+            variables.found_smarter = False
         else:
+            variables.found_smarter = True
             best_coord = (airport_coord[get_smarter[0][0]][0],airport_coord[get_smarter[0][0]][1])
+            variables.best_smarter = airports_name[get_smarter[0][0]]
+            variables.score_smarter = get_smarter[0][1]
             cv.line(merged_image, (high_X,high_Y), best_coord, color=(0, 255, 255), thickness=3) 
     
     cv.imshow(window_capture_name, combine_img(srcPlane_R,map,high_Y,high_X))

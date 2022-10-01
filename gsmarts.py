@@ -1,3 +1,5 @@
+import variables
+
 # implementation of the g-smart/smartest method
 
 def split_vector(vector):
@@ -134,23 +136,24 @@ def gsmarts(matriz_cons,k,k_correction):
         for i in range(len(k_correction)):
             k_gsmartest[i] = k[i]*k_correction[i]
         total_k = 0
-        print("gsmarts",k_gsmartest)
-        k_norm_smartes = []
+        #print("gsmarts",k_gsmartest)
+        k_norm_smartest = []
         score_alt = [[0 for x in range(2)] for y in range(len(matriz_cons))]
         for i in k_gsmartest:
             total_k = total_k + i
         for v in range(len(k_gsmartest)):
             if(total_k != 0):
-                k_norm_smartes.append(k_gsmartest[v]/total_k)
+                k_norm_smartest.append(k_gsmartest[v]/total_k)
             else:
-                k_norm_smartes.append(0)
+                k_norm_smartest.append(0)
         for alt in range(len(matriz_cons)):
             for criteria in range(len(matriz_cons[alt])-1):
                 if(criteria == 0):
                     score_alt[alt][0] = matriz_cons[alt][6]
-                score_alt[alt][1] = score_alt[alt][1] + matriz_cons[alt][criteria]*k_norm_smartes[criteria]
+                score_alt[alt][1] = score_alt[alt][1] + matriz_cons[alt][criteria]*k_norm_smartest[criteria]
                 
         score_alt.sort(key=lambda row: (row[1]), reverse = True)
-        print("gsmarts",k_norm_smartes, score_alt)
+        variables.knorm_smartest = k_norm_smartest
+        #print("gsmarts",k_norm_smartes, score_alt)
             
         return score_alt

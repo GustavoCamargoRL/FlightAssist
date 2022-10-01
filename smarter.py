@@ -1,3 +1,4 @@
+import variables
 # implementacao do metodo smarter para MAD
 def k_roc(size, order):
     k = [0 for x in range(size)]
@@ -13,7 +14,7 @@ def smarter(matriz_cons , order):
         return 0
     else:
         k_norm = k_roc(len(order),order)
-        #print("k_roc",k_norm)
+        variables.knorm_smarter = k_norm
         score_alt = [[0 for x in range(2)] for y in range(len(matriz_cons))]
         for alt in range(len(matriz_cons)):
             for criteria in range(len(matriz_cons[alt])-1):
