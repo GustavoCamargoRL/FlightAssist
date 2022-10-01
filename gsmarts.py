@@ -48,19 +48,13 @@ def intra_analysis(matriz_cons,k,s,c_type):
                     Q2 = values_c[1]
                     Q1 = (minimum + Q2)/2
                     Q3 = (maximum + Q2)/2
-                    #if(abs(matriz_cons[0][i] - matriz_cons[1][i]) <= 1 and abs(matriz_cons[0][i] - matriz_cons[2][i]) <= 1 and abs(matriz_cons[1][i] - matriz_cons[2][i]) <= 1):
-                    #    ck_vector.append(0.5)
                     boxplot = [minimum,Q1,Q2,Q3,maximum]
-                    #print(boxplot)
-
                     distance_vector = []
                     for alt in range(len(boxplot)):   # alternatives exploration
                         for n_alt in range(len(boxplot)-alt):   # pair-pair comparison  
                             if(alt != n_alt+alt):
                                 distance_vector.append(abs(boxplot[alt]-boxplot[n_alt+alt])) #sum of all distances
                     d_total = sum(distance_vector)
-                    #if(i == 5):
-                    #    print(d_total,len(distance_vector))
                     d_mean = d_total/len(distance_vector)  #mean of distances
                     if(s[i] > d_mean):
                         ck = d_mean/s[i]             # correction factor for K
@@ -136,7 +130,6 @@ def gsmarts(matriz_cons,k,k_correction):
         for i in range(len(k_correction)):
             k_gsmartest[i] = k[i]*k_correction[i]
         total_k = 0
-        #print("gsmarts",k_gsmartest)
         k_norm_smartest = []
         score_alt = [[0 for x in range(2)] for y in range(len(matriz_cons))]
         for i in k_gsmartest:
@@ -154,6 +147,5 @@ def gsmarts(matriz_cons,k,k_correction):
                 
         score_alt.sort(key=lambda row: (row[1]), reverse = True)
         variables.knorm_smartest = k_norm_smartest
-        #print("gsmarts",k_norm_smartes, score_alt)
             
         return score_alt

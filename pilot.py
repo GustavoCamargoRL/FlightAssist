@@ -15,27 +15,28 @@ import time
 from matplotlib.animation import FuncAnimation
 from feedback import report
 
-
+# inicialization of global variables
 variables.init()
 
-def thread_elicit():
-    variables.elicitation_done = elicitation()
+# Threads definition
+def thread_swing():
+    variables.elicitation_done = swing()
 
-def thread_method():
-    chooseMethod()
 
 def thread_feedback():
     report()
 
-k_smarts = [100,90,40,20,30,60]
-s = [4,200,5,0,1,2]
+#k_smarts = [100,90,40,20,30,60]
+#s = [4,200,5,0,1,2]
 
-
+# type of criteria (0 = continuous; 1 = discrete; 2 = binary)
 c_type = [0,0,0,2,1,1]
 
-Telicit = threading.Thread(target=thread_elicit)
-Telicit.start()
+#start elicitation-swing 
+Tswing = threading.Thread(target=thread_swing)
+Tswing.start()
 
+# swing bar graph visualization
 while(variables.elicitation_done == False):
     Criteria = ['Distance','Length','Altitude','Wind','Urban density', 'Support']
     
@@ -51,30 +52,31 @@ while(variables.elicitation_done == False):
         plt.tight_layout()
 
 
-    ani = FuncAnimation(plt.gcf(), animate, interval=200)
+    ani = FuncAnimation(plt.gcf(), animate, interval=100)
 
     plt.tight_layout()
     plt.show()
 
+init_weights()
+init_st()
 
 
+choice()  #calls for thread choose method in menu.py
 
-Thr = threading.Thread(target=thread_method)
-Thr.start()
-
+# start thread of feedback data 
 fb = threading.Thread(target=thread_feedback)
 fb.start()
 
-
+# map and airplane image load
 srcMap = cv.imread("map.png")
 srcPlane = cv.imread("airplane3.png")
 
-
+# mapped airports name
 airports_name = ["LaGuardia Airport","Teterboro Airport","JFK Airport","Republic Airport","MacArthur Airport",
 "Westchester Country Airport","Hill Top Airport","Lincoln Park Airport","Essex Country Airport","Morristown Airport",
 "Linden Airoprt","Newark Airport","Central Jersey Airport"]
 
-# index(Distancia,Comprimento de pista,Altitude, Direção do vento, Nível de construções ao redor, Nível de suporte)
+# index(Distance, Runway Length, Altitude, Wind direction, Building density level, Support level)
 airport_matrix = [
     [12.41, 2134, 20, 2,1,2,0],
     [15.42,1833,8.4,1,3,5,1],
@@ -106,7 +108,7 @@ airport_matrix_ori = [
     [28.71,3048,17.4,1,2,1,11],
     [69.27,1070,86,1,2,4,12]
 ]
-#coordenadas de imagem do aeroporto
+#coordinates of airports in map
 airport_coord = [
     [638,392,0],
     [472,296,1],
@@ -135,7 +137,7 @@ glide_ratio = 17
 
 #INICIALIZAÇÃO COORDENADAS MAPA
 
-# INICIALIZAÇÃO VARIAVEIS MENU
+# INICIALIZAÇÃO VARIAVEIS MENU DE VOO
 max_value_A = 12000 # M
 max_value_H = 360//2
 max_value_R = 360
@@ -201,7 +203,7 @@ def on_rotation_trackbar(val):
     high_R = max(high_R, low_R+1)
     cv.setTrackbarPos(rotation_name, window_detection_name, high_R)
 
-
+#Trackbars of flight controls
 cv.namedWindow(window_capture_name)
 cv.namedWindow(window_detection_name)
 cv.createTrackbar(altitude_name, window_detection_name , high_A, max_value_A, on_altitude_trackbar)
@@ -211,7 +213,7 @@ cv.createTrackbar(rotation_name, window_detection_name , high_R, max_value_R, on
 cv.resizeWindow(window_detection_name,width=400,height=2)
 srcPlane = cv.resize(srcPlane,(int(srcPlane.shape[1]), int(srcPlane.shape[1])), interpolation=cv.INTER_AREA)
 
-
+# Rotation plane function
 def combine_img(image1, image2, anchor_y, anchor_x):
     foreground, background = image1.copy(), image2.copy()
     able = True
@@ -260,6 +262,7 @@ def rotate_image(mat, angle):
     rotated_mat = cv.warpAffine(mat, rotation_mat, (bound_w, bound_h))
     return rotated_mat
 
+# Glide radius of the plane
 def get_glide_radius(z_coord):
     radius = int((z_coord/1000)*glide_ratio*c_aprox)
     return radius
@@ -267,7 +270,6 @@ def get_glide_radius(z_coord):
 #update distance from airplane to airport in the airport matrix
 def update_pos(x_coord,y_coord):
     iterator = 0
-    #print(airport_matrix[0])
     for a in airport_coord:
         pixel_dist = pow(a[0]-x_coord,2)+pow(a[1]-y_coord,2)
         pixel_dist = math.sqrt(pixel_dist)
@@ -279,11 +281,11 @@ def update_pos(x_coord,y_coord):
         airport_matrix[iterator][5] = airport_matrix_ori[iterator][5]
         iterator = iterator+1
 
-    #print(airport_matrix[0])
+
 
 
 planesize = np.float32([[0,0],[srcPlane.shape[0],0],[0,srcPlane.shape[1]],[srcPlane.shape[0],srcPlane.shape[1]]])
-#srcPlane[np.where((srcPlane == [0,0,0]).all(axis=2))] = [1,1,1]
+
 
 def matrix_smarts(matrix_con):
     if matrix_con is None:
@@ -291,9 +293,7 @@ def matrix_smarts(matrix_con):
     else:
         max_vc = []
         min_vc = []
-        #print(matrix_con)
         for alt in range(len(matrix_con)):
-            #print(matrix_con[alt][1])
             for cri in range(len(matrix_con[0])-1):
                 if(alt == 0):
                     max_vc.append(matrix_con[alt][cri])
@@ -314,9 +314,8 @@ def matrix_smarts(matrix_con):
                     matrix_con[alt][cri] = 0
         return matrix_con
 
-
 while True:
-    matrix_selected = []
+    matrix_selected = []   # available alternatives
     map = srcMap.copy()
     srcPlane_R = rotate_image(srcPlane,high_R)
     cv.circle(map, (high_X,high_Y), get_glide_radius(high_A), (0,0,255), thickness=5)
@@ -324,21 +323,19 @@ while True:
     for a in airport_coord:
         if(pow(high_X-a[0],2)+pow(high_Y-a[1],2) <= pow(get_glide_radius(high_A),2)):
             map = cv.circle(map, (a[0],a[1]), radius=1, color=(0, 255, 0), thickness=10)
-            #print(airport_matrix[a[2]])
             matrix_selected.append(airport_matrix[a[2]])
         else:        
             map = cv.circle(map, (a[0],a[1]), radius=1, color=(0, 255, 255), thickness=10)
-    #print("matrix: ",matrix_selected)
     planecoord = np.float32([[high_X-20,high_Y-20],[high_X+20,high_Y-20],[high_X-20,high_Y+20],[high_X+20,high_Y+20]])
     homography1, status1 = cv.findHomography(planesize,planecoord)
     warpBoard1 = cv.warpPerspective(srcPlane_R, homography1, (srcMap.shape[1], srcMap.shape[0]), borderMode=cv.BORDER_CONSTANT, borderValue=(0,0,0))
     merged_image = np.where(warpBoard1==0, map, warpBoard1)
     if(len(matrix_selected)>1):
-        correct_k = intra_analysis(matrix_selected,k_smarts,s,c_type)
+        correct_k = intra_analysis(matrix_selected,variables.weights_smarts,variables.st_smartest,c_type)
 
     normalized_matrix = matrix_smarts(matrix_selected)
     if(variables.activate[2]==1):
-        get_smartest = gsmarts(normalized_matrix,k_smarts,correct_k)
+        get_smartest = gsmarts(normalized_matrix,variables.weights_smarts,correct_k)
         if not get_smartest:
             print("no choice SMARTEST")
             variables.found_smartest = False
@@ -349,7 +346,7 @@ while True:
             variables.score_smartest = get_smartest[0][1]
             cv.line(merged_image, (high_X,high_Y), best_coord, color=(0, 255, 0), thickness=10)
     if(variables.activate[0]==1):
-        get_order = smarts(normalized_matrix,k_smarts)
+        get_order = smarts(normalized_matrix,variables.weights_smarts)
         if not get_order:
             print("no choice SMARTS")
             variables.found_smarts = False
@@ -373,6 +370,7 @@ while True:
     
     cv.imshow(window_capture_name, combine_img(srcPlane_R,map,high_Y,high_X))
     cv.imshow(window_capture_name, merged_image)
+
     key = cv.waitKey(30)
     if key == ord('q') or key == 27:
         break

@@ -17,12 +17,14 @@ def init():
     global score_smartest
     global score_smarts
     global score_smarter
+    global thread_method
+    global weights_smarts
+    global st_smartest
 
 
-
-    activate = [0,0,0]
-    rank = []
-    elicit = [0,0,0,0,0,0,]
+    activate = [0,0,0]  # 1- smarts 2- smarter 3- smartest
+    rank = []  #rank of elicitation
+    elicit = [0,0,0,0,0,0] #check elicit criteria 0 if not, 1 if ranked
     elicitation_done = False
     knorm_smartest = []
     knorm_smarts = []
@@ -36,3 +38,6 @@ def init():
     score_smartest = 0
     score_smarts = 0
     score_smarter = 0
+    thread_method = True
+    weights_smarts = [0,0,0,0,0,0]
+    st_smartest = [0,0,0,0,0,0]
